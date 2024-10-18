@@ -1,9 +1,15 @@
 package main
 
 import (
+	"encoding/binary"
+	"fmt"
 	rl "github.com/gen2brain/raylib-go/raylib"
+	"image"
+	"image/color"
+	"image/png"
 	"math"
 	r "math/rand/v2"
+	"os"
 )
 
 const GridArea = 512
@@ -98,6 +104,88 @@ func Corners(array [GridArea][GridArea]float32) [(GridArea / VectorGridDiv) + 1]
 
 }
 
+func saveGridBinary(grid [GridArea][GridArea]float32, filename string) error {
+	filename = fmt.Sprintf("%s.bin", filename)
+
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+
+		file, err := os.Create(filename)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		// Escribimos la cuadrícula en formato binario
+		for i := 0; i < GridArea; i++ {
+			for j := 0; j < GridArea; j++ {
+				err := binary.Write(file, binary.LittleEndian, grid[i][j])
+				if err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	} else {
+
+		err := os.Remove(filename)
+		if err != nil {
+			return err
+		}
+		file, err := os.Create(filename)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		// Escribimos la cuadrícula en formato binario
+		for i := 0; i < GridArea; i++ {
+			for j := 0; j < GridArea; j++ {
+				err := binary.Write(file, binary.LittleEndian, grid[i][j])
+				if err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	}
+}
+func saveGridAsImage(grid [GridArea][GridArea]float32, filename string) error {
+	img := image.NewGray(image.Rect(0, 0, GridArea, GridArea))
+
+	for y := 0; y < GridArea; y++ {
+		for x := 0; x < GridArea; x++ {
+			value := uint8(grid[y][x] * 255) // Convertir de rango [0, 1] a [0, 255]
+			img.SetGray(x, y, color.Gray{Y: value})
+		}
+	}
+
+	filename = fmt.Sprintf("%s.png", filename)
+	if _, err := os.Stat(filename); os.IsNotExist(err) {
+
+		file, err := os.Create(filename)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		return png.Encode(file, img)
+	} else {
+		err := os.Remove(filename)
+		if err != nil {
+			return err
+		}
+
+		file, err := os.Create(filename)
+		if err != nil {
+			return err
+		}
+		defer file.Close()
+
+		return png.Encode(file, img)
+	}
+
+}
+
 func main() {
 	rl.InitWindow(1200, 600, "Perlin Noise")
 	defer rl.CloseWindow()
@@ -115,6 +203,16 @@ func main() {
 		}
 
 	}
+
+	err := saveGridBinary(grid, "Noise")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = saveGridAsImage(grid, "Noise")
+	if err != nil {
+		fmt.Println(err)
+	}
 	for !rl.WindowShouldClose() {
 
 		rl.BeginDrawing()
@@ -128,5 +226,4 @@ func main() {
 
 		rl.EndDrawing()
 	}
-
 }
