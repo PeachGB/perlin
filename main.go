@@ -70,7 +70,7 @@ func fade(w float32) float32 {
 
 	return w * w * w * (w*(w*6-15) + 10)
 }
-func bilinterpol(prods [4]float32, x int, y int, cornX int, cornY int) float32 {
+func bilinterpol(prods [4]float32, x int, y int) float32 {
 	dot00 := prods[0]
 	dot10 := prods[1]
 	dot01 := prods[2]
@@ -111,7 +111,7 @@ func main() {
 				offsetX, offsetY := CalculateOffset(XCorners[k]*GridArea/VectorGridDiv, YCorners[k]*GridArea/VectorGridDiv, j, i)
 				prods[k] = dotProd2D(corners[YCorners[k]][XCorners[k]][0], corners[YCorners[k]][XCorners[k]][1], float32(offsetX), float32(offsetY))
 			}
-			grid[i][j] = bilinterpol(prods, j, i, XCorners[0]*4, YCorners[0]*4)
+			grid[i][j] = bilinterpol(prods, j, i)
 		}
 
 	}
