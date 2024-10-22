@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/binary"
 	"fmt"
-	rl "github.com/gen2brain/raylib-go/raylib"
 	"image"
 	"image/color"
 	"image/png"
@@ -12,8 +11,8 @@ import (
 	"os"
 )
 
-const GridArea = 512
-const VectorGridDiv = 128
+const GridArea = 512 * 2
+const VectorGridDiv = 128 * 2
 const VectorGrid = GridArea / VectorGridDiv
 
 func initGrid() [GridArea][GridArea]float32 {
@@ -185,10 +184,8 @@ func saveGridAsImage(grid [GridArea][GridArea]float32, filename string) error {
 	}
 
 }
+func perlin() [GridArea][GridArea]float32 {
 
-func main() {
-	rl.InitWindow(1200, 600, "Perlin Noise")
-	defer rl.CloseWindow()
 	grid := initGrid()
 	corners := Corners(grid)
 	for i := 0; i < GridArea; i++ {
@@ -203,6 +200,11 @@ func main() {
 		}
 
 	}
+	return grid
+}
+
+func main() {
+	grid := perlin()
 
 	err := saveGridBinary(grid, "Noise")
 	if err != nil {
@@ -212,18 +214,5 @@ func main() {
 	err = saveGridAsImage(grid, "Noise")
 	if err != nil {
 		fmt.Println(err)
-	}
-	for !rl.WindowShouldClose() {
-
-		rl.BeginDrawing()
-		rl.ClearBackground(rl.White)
-
-		for l := 0; l < GridArea; l++ {
-			for m := 0; m < GridArea; m++ {
-				rl.DrawRectangle(int32(m*600/GridArea), int32(l*600/GridArea), 600/GridArea, 600/GridArea, rl.Color{0, 0, 0, uint8(200 * grid[l][m])})
-			}
-		}
-
-		rl.EndDrawing()
 	}
 }
